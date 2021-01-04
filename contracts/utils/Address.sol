@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.7.4;
 
 /**
  * @dev Collection of functions related to the address type
@@ -21,7 +21,9 @@ library Address {
 
         uint256 size;
         // solhint-disable-next-line no-inline-assembly
-        assembly { size := extcodesize(account) }
+        assembly {
+            size := extcodesize(account)
+        }
         return size > 0;
     }
 
@@ -29,7 +31,11 @@ library Address {
      * @dev Converts an `address` into `address payable`. Note that this is
      * simply a type cast: the actual underlying value is not changed.
      */
-    function toPayable(address account) internal pure returns (address payable) {
+    function toPayable(address account)
+        internal
+        pure
+        returns (address payable)
+    {
         return address(uint160(account));
     }
 }

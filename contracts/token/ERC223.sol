@@ -1,15 +1,20 @@
-pragma solidity ^0.5.1;
+pragma solidity ^0.7.4;
 
 import "./IERC223.sol";
 import "./IERC223Recipient.sol";
-import "../../math/SafeMath.sol";
-import "../../utils/Address.sol";
+import "../math/SafeMath.sol";
+import "../utils/Address.sol";
 
 /**
  * @title Reference implementation of the ERC223 standard token.
  */
 contract ERC223Token is IERC223 {
-    using SafeMath for uint;
+    /**
+     * @dev Returns the total supply of the token.
+     */
+    uint256 public _totalSupply;
+
+    using SafeMath for uint256;
 
     /**
      * @dev See `IERC223.totalSupply`.
@@ -18,8 +23,8 @@ contract ERC223Token is IERC223 {
         return _totalSupply;
     }
 
-    mapping(address => uint) balances; // List of user balances.
-    
+    mapping(address => uint256) balances; // List of user balances.
+
     /**
      * @dev Transfer the specified amount of tokens to the specified address.
      *      Invokes the `tokenFallback` function if the recipient is a contract.
@@ -31,19 +36,23 @@ contract ERC223Token is IERC223 {
      * @param _value Amount of tokens that will be transferred.
      * @param _data  Transaction metadata.
      */
-    function transfer(address _to, uint _value, bytes memory _data) public returns (bool success){
+    function transfer(
+        address _to,
+        uint256 _value,
+        bytes memory _data
+    ) public override returns (bool success) {
         // Standard function transfer similar to ERC20 transfer with no _data .
         // Added due to backwards compatibility reasons .
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        if(Address.isContract(_to)) {
+        if (Address.isContract(_to)) {
             IERC223Recipient receiver = IERC223Recipient(_to);
             receiver.tokenFallback(msg.sender, _value, _data);
         }
         emit Transfer(msg.sender, _to, _value, _data);
         return true;
     }
-    
+
     /**
      * @dev Transfer the specified amount of tokens to the specified address.
      *      This function works the same with the previous one
@@ -53,11 +62,15 @@ contract ERC223Token is IERC223 {
      * @param _to    Receiver address.
      * @param _value Amount of tokens that will be transferred.
      */
-    function transfer(address _to, uint _value) public returns (bool success){
+    function transfer(address _to, uint256 _value)
+        public
+        override
+        returns (bool success)
+    {
         bytes memory empty = hex"00000000";
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        if(Address.isContract(_to)) {
+        if (Address.isContract(_to)) {
             IERC223Recipient receiver = IERC223Recipient(_to);
             receiver.tokenFallback(msg.sender, _value, empty);
         }
@@ -65,14 +78,18 @@ contract ERC223Token is IERC223 {
         return true;
     }
 
-    
     /**
      * @dev Returns balance of the `_owner`.
      *
      * @param _owner   The address whose balance will be returned.
      * @return balance Balance of the `_owner`.
      */
-    function balanceOf(address _owner) public view returns (uint balance) {
+    function balanceOf(address _owner)
+        public
+        view
+        override
+        returns (uint256 balance)
+    {
         return balances[_owner];
     }
 }

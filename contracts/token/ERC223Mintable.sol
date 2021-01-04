@@ -1,6 +1,7 @@
-pragma solidity ^0.5.1;
+pragma solidity ^0.7.4;
 
 import "./ERC223.sol";
+import "../math/SafeMath.sol";
 
 /**
  * @dev Extension of {ERC223} that adds a set of accounts with the {MinterRole},
@@ -9,18 +10,22 @@ import "./ERC223.sol";
  * At construction, the deployer of the contract is the only minter.
  */
 contract ERC223Mintable is ERC223Token {
-    
+    using SafeMath for uint256;
+
     event MinterAdded(address indexed account);
     event MinterRemoved(address indexed account);
 
-    mapping (address => bool) public _minters;
+    mapping(address => bool) public _minters;
 
-    constructor () internal {
+    constructor() {
         _addMinter(msg.sender);
     }
 
     modifier onlyMinter() {
-        require(isMinter(msg.sender), "MinterRole: caller does not have the Minter role");
+        require(
+            isMinter(msg.sender),
+            "MinterRole: caller does not have the Minter role"
+        );
         _;
     }
 
@@ -45,6 +50,7 @@ contract ERC223Mintable is ERC223Token {
         _minters[account] = false;
         emit MinterRemoved(account);
     }
+
     /**
      * @dev See {ERC20-_mint}.
      *
@@ -52,12 +58,16 @@ contract ERC223Mintable is ERC223Token {
      *
      * - the caller must have the {MinterRole}.
      */
-    function mint(address account, uint256 amount) public onlyMinter returns (bool) {
+    function mint(address account, uint256 amount)
+        public
+        onlyMinter
+        returns (bool)
+    {
         balances[account] = balances[account].add(amount);
         _totalSupply = _totalSupply.add(amount);
-        
+
         bytes memory empty = hex"00000000";
-        emit Transfer(address(0),account, amount, empty);
+        emit Transfer(address(0), account, amount, empty);
         return true;
     }
 }

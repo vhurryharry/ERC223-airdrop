@@ -1,0 +1,11 @@
+artifacts
+cache
+dist
+deployments/localhost
+node_modules
+src/types
+.mnemonic
+.vscode
+.node*
+*.bin
+*.abi
